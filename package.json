@@ -1,6 +1,6 @@
 {
   "name": "@marionette-api/sdk-test-inner",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Marionette API to SDK",
   "type": "module",
   "main": "./lib/index.js",
@@ -21,7 +21,7 @@
   "dependencies": {
     "events": "^3.3.0",
     "pako": "^2.1.0",
-    "protobufjs": "^7.2.3"
+    "protobufjs": "^7.2.5"
   },
   "devDependencies": {
     "@types/node": "^18.16.3",

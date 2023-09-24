@@ -4,13 +4,13 @@ const baseConfig = {
   entryPoints: ["src/index.ts"],
   outdir: "lib",
   bundle: true,
-  sourcemap: true,
 };
 
 Promise.all([
   esbuild.build({
     ...baseConfig,
     format: "cjs",
+    minify: true,
     outExtension: {
       ".js": ".cjs",
     },
@@ -19,6 +19,7 @@ Promise.all([
   esbuild.build({
     ...baseConfig,
     format: "esm",
+    minify: true,
   }),
 ]).catch(() => {
   console.log("Build failed");
