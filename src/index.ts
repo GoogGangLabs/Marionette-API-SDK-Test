@@ -6,7 +6,7 @@ import { Request } from "./request";
 import * as MarionetteType from "./types";
 
 export class MarionetteClient {
-  private readonly streamConfig: MarionetteType.StreamConfigurations;
+  private readonly streamConfig: MarionetteType.StreamConfigurations = {};
 
   protected readonly streamClient = new RTCPeerClient("stream");
   protected readonly dataClient = new RTCPeerClient("data");
