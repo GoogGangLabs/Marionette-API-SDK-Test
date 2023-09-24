@@ -1,11 +1,11 @@
-const EventStatus = {
+const EventState = {
   LOAD_STREAM: "LOAD_STREAM",
   ICE_CANDIDATE: "ICE_CANDIDATE",
   ICE_CONNECTION: "ICE_CONNECTION",
   STREAM_RESULT: "STREAM_RESULT",
   ERROR: "ERROR",
 } as const;
-type EventStatus = (typeof EventStatus)[keyof typeof EventStatus];
+type EventState = (typeof EventState)[keyof typeof EventState];
 
 const ErrorMessage = {
   UNAUTHORIZED: "UNAUTHORIZED",
@@ -13,10 +13,11 @@ const ErrorMessage = {
 } as const;
 type ErrorMessage = (typeof ErrorMessage)[keyof typeof ErrorMessage];
 
-const CandidateType = {
-  STUN: "STUN",
-  TURN: "TURN",
-} as const;
-type CandidateType = (typeof CandidateType)[keyof typeof CandidateType];
+const GuardFlag = {
+  INIT: 1,
+  STREAM: 1 << 1,
+  PEER_CONNECTION: 1 << 2,
+};
+type GuardFlag = (typeof GuardFlag)[keyof typeof GuardFlag];
 
-export { ErrorMessage, EventStatus, CandidateType };
+export { ErrorMessage, EventState, GuardFlag };

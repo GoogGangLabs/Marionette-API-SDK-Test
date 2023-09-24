@@ -1,23 +1,24 @@
-import { CandidateType } from "./enum";
+import { EventEmitter } from "events";
 
-export interface MarionetteConfiguration {
-  token: string;
-}
+export type PeerType = "stream" | "data" | "metadata";
 
-export interface TurnCredential {
+export interface ICECredential {
   username: string;
   credential: string;
+  iceHost: string;
 }
 
-export interface SignalingRequest {
+export interface MarionetteConstraint {
+  event: EventEmitter;
+  host: string;
+  token: string;
+  iceCredential: ICECredential;
+}
+
+export interface MarionetteConfigurations {
+  token: string;
   roomId: string;
-  webRtcSdp: string;
-  dataChannelSdp: string;
-}
-
-export interface SignalingResponse {
-  webRtcSdp: string;
-  dataChannelSdp: string;
+  nickname?: string;
 }
 
 export interface StreamConfigurations {
@@ -25,61 +26,33 @@ export interface StreamConfigurations {
   width?: number;
   height?: number;
   frameRate?: number;
-  bitrate?: number;
-  candidateType?: CandidateType;
-  debug?: boolean;
 }
 
-export interface LandmarkPoint {
-  x?: number;
-  y?: number;
-  z?: number;
-  visibility?: number;
-}
-
-export type DeserializeLandmark = LandmarkPoint[];
-
-export interface DeserializeLandmarks {
-  face?: DeserializeLandmark;
-  left_hand?: DeserializeLandmark;
-  right_hand?: DeserializeLandmark;
-  pose?: DeserializeLandmark;
-  pose_world?: DeserializeLandmark;
-}
-
-export type SerializeLandmark = number[];
-
-export interface SerializeLandmarks {
-  face?: SerializeLandmark;
-  left_hand?: SerializeLandmark;
-  right_hand?: SerializeLandmark;
-  pose?: SerializeLandmark;
-  pose_world?: SerializeLandmark;
-}
-
-export interface StreamResponse {
+export interface OptimizationSession {
   sessionId: string;
   roomId: string;
-  fps: number;
+  // fps: number; todo
   sequence: number;
   optimizedValue: number;
-  result: Buffer;
+  results: Buffer;
 }
 
-export type LandmarkConnectionArray = Array<[number, number]>;
-
-export type Fn<I, O> = (input: I) => O;
-
-export interface Data {
-  index?: number;
-  from?: DeserializeLandmarks;
-  to?: DeserializeLandmarks;
+export class FetchConfigurations<T> {
+  host: string;
+  method?: "GET" | "POST" | "PATCH";
+  body?: T;
 }
 
-export interface DrawingOptions {
-  color?: string | CanvasGradient | CanvasPattern | Fn<Data, string | CanvasGradient | CanvasPattern>;
-  fillColor?: string | CanvasGradient | CanvasPattern | Fn<Data, string | CanvasGradient | CanvasPattern>;
-  lineWidth?: number | Fn<Data, number>;
-  radius?: number | Fn<Data, number>;
-  visibilityMin?: number;
+export interface SignalingRequest {
+  roomId: string;
+  nickname: string;
+  streamSdp: string;
+  dataSdp: string;
+  metadataSdp: string;
+}
+
+export interface SignalingResponse {
+  streamSdp: string;
+  dataSdp: string;
+  metadataSdp: string;
 }
