@@ -34,10 +34,10 @@ export const GuardFactory = (...flags: GuardFlag[]) => {
   };
 };
 
-export const CatchError = (target: any, _: any, descriptor: PropertyDescriptor) => {
+export const CatchError = (target: MarionetteClient, _: any, descriptor: PropertyDescriptor) => {
   const method = descriptor.value;
 
-  descriptor.value = async (...args: any) => {
+  descriptor.value = async function (this: MarionetteClient, ...args: any) {
     try {
       return await method.apply(target, args);
     } catch (err) {
