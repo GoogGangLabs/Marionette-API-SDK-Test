@@ -6,3 +6,4 @@ example/
 tsconfig.json
 build.js
 yarn.lock
+yarn-error.lock
