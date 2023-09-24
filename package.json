@@ -21,7 +21,7 @@
   "dependencies": {
     "events": "^3.3.0",
     "pako": "^2.1.0",
-    "protobufjs": "^7.2.3"
+    "protobufjs": "^7.2.5"
   },
   "devDependencies": {
     "@types/node": "^18.16.3",
