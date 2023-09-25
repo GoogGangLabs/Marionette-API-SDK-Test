@@ -1,10 +1,11 @@
 import { Constraint, Sleep } from "./constant";
 import { EventState, GuardFlag } from "./enum";
 import { RTCPeerClient } from "./peer.client";
-import { CatchError, GuardFactory } from "./decorator";
+import { CatchError, ClassBinding, GuardFactory } from "./decorator";
 import { Request } from "./request";
 import * as MarionetteType from "./types";
 
+@ClassBinding
 export class MarionetteClient {
   private streamConfig: MarionetteType.StreamConfigurations = {};
 

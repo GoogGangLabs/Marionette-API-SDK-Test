@@ -1,9 +1,11 @@
-import * as pako from "pako";
+import pako from "pako";
 import { EventState } from "./enum";
 import { Constraint, Sleep } from "./constant";
 import { OptimizationSession, OptimizationSessionList, PeerType } from "./types";
 import { optimizationSession, serializedRoomData } from "./proto";
+import { ClassBinding } from "./decorator";
 
+@ClassBinding
 export class RTCPeerClient {
   private type: PeerType;
 

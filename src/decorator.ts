@@ -2,6 +2,22 @@ import { MarionetteClient } from "./index";
 import { Constraint } from "./constant";
 import { EventState, GuardFlag } from "./enum";
 
+export const ClassBinding = (target: any) => {
+  const keys = Object.getOwnPropertyNames(target.prototype);
+
+  keys.forEach((key) => {
+    const descriptor = Object.getOwnPropertyDescriptor(target.prototype, key);
+
+    if (descriptor.value instanceof Function && key !== "constructor") {
+      Object.defineProperty(target.prototype, key, {
+        get() {
+          return descriptor.value.bind(this);
+        },
+      });
+    }
+  });
+};
+
 export const GuardFactory = (...flags: GuardFlag[]) => {
   return (_: MarionetteClient, __: string | symbol, descriptor: PropertyDescriptor) => {
     const total = flags.reduce((a, b) => a + b, 0);
