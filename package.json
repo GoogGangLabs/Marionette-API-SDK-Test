@@ -1,6 +1,6 @@
 {
   "name": "@marionette-api/sdk-test-inner",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Marionette API to SDK",
   "type": "module",
   "main": "./lib/index.js",

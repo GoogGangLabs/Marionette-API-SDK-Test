@@ -10,7 +10,7 @@ Promise.all([
   esbuild.build({
     ...baseConfig,
     format: "cjs",
-    minify: true,
+    // minify: true,
     outExtension: {
       ".js": ".cjs",
     },
@@ -19,7 +19,7 @@ Promise.all([
   esbuild.build({
     ...baseConfig,
     format: "esm",
-    minify: true,
+    // minify: true,
   }),
 ]).catch(() => {
   console.log("Build failed");

@@ -1,8 +1,8 @@
 name: Publish
 
 on:
-  pull_request:
-    branches: [release]
+  push:
+    branches: [main]
 
 jobs:
   publish:
