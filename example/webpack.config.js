@@ -1,5 +1,6 @@
 const path = require("path");
 const fs = require("fs");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
   entry: "./index.js",
@@ -23,4 +24,11 @@ module.exports = {
     maxAssetSize: 512000,
   },
   mode: "development",
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: "./index.html",
+      filename: "index.html",
+      inject: "body",
+    }),
+  ],
 };

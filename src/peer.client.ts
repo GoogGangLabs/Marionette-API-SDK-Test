@@ -1,7 +1,7 @@
 import { EventState } from "./enum";
-import { Constraint } from "./constant";
-import { OptimizationSession, PeerType } from "./types";
-import { serializedRoomData } from "./proto";
+import { Constraint, Sleep } from "./constant";
+import { OptimizationSession, OptimizationSessionList, PeerType } from "./types";
+import { optimizationSession, serializedRoomData } from "./proto";
 
 export class RTCPeerClient {
   private type: PeerType;
@@ -50,11 +50,9 @@ export class RTCPeerClient {
 
   public getStream = () => this.stream;
   public getOffer = async (): Promise<string> => {
-    const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
     for (let _ = 0; _ < 20; _++) {
       if (this.offer) return this.offer;
-      await sleep(500);
+      await Sleep(500);
     }
 
     throw new Error("ICE candidate failed");
@@ -114,7 +112,8 @@ export class RTCPeerClient {
       }
     };
 
-    this.peerConnection.oniceconnectionstatechange = (_) => {
+    this.peerConnection.onconnectionstatechange = (_) => {
+      console.log(this.type, ":", this.peerConnection.connectionState);
       if (this.peerConnection.connectionState === "connected") {
         this.connectStatus = true;
       }
@@ -128,7 +127,13 @@ export class RTCPeerClient {
     switch (this.type) {
       case "data":
         this.dataChannel.onmessage = (event) => {
-          const decoded = serializedRoomData.decode(new Uint8Array(event.data)).toJSON() as OptimizationSession[];
+          const listMessage = serializedRoomData.decode(new Uint8Array(event.data));
+          const decoded = serializedRoomData.toObject(listMessage) as OptimizationSessionList;
+          for (let i = 0; i < decoded.data.length; i++) {
+            const dataMessage = optimizationSession.decode(decoded.data[i]);
+            const data = optimizationSession.toObject(dataMessage) as OptimizationSession;
+            console.log(data);
+          }
         };
         break;
       case "metadata": // todo: 구현해야 함

@@ -34,12 +34,12 @@ export const GuardFactory = (...flags: GuardFlag[]) => {
   };
 };
 
-export const CatchError = (target: MarionetteClient, _: any, descriptor: PropertyDescriptor) => {
+export const CatchError = (_: MarionetteClient, __: any, descriptor: PropertyDescriptor) => {
   const method = descriptor.value;
 
   descriptor.value = async function (this: MarionetteClient, ...args: any) {
     try {
-      return await method.apply(target, args);
+      return await method.apply(this, args);
     } catch (err) {
       Constraint.event.emit(EventState.ERROR, err);
     }

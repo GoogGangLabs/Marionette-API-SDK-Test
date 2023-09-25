@@ -28,6 +28,10 @@ export interface StreamConfigurations {
   frameRate?: number;
 }
 
+export interface OptimizationSessionList {
+  data: Uint8Array[];
+}
+
 export interface OptimizationSession {
   sessionId: string;
   roomId: string;
