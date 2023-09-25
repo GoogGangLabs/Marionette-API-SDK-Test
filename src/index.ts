@@ -1,4 +1,4 @@
-import { Constraint } from "./constant";
+import { Constraint, Sleep } from "./constant";
 import { EventState, GuardFlag } from "./enum";
 import { RTCPeerClient } from "./peer.client";
 import { CatchError, GuardFactory } from "./decorator";
@@ -47,7 +47,7 @@ export class MarionetteClient {
     this.dataClient.release();
     this.metadataClient.release();
 
-    await Request({ host: `${Constraint.host}/session/leave` }).catch();
+    await Request({ host: `${Constraint.host}/session/leave` });
   }
 
   @GuardFactory(GuardFlag.INIT)
@@ -90,11 +90,22 @@ export class MarionetteClient {
       body: requestPayload,
     });
 
+    console.log(responsePayload);
     await Promise.all([
       this.streamClient.setAnswer(responsePayload.streamSdp),
       this.dataClient.setAnswer(responsePayload.dataSdp),
       this.metadataClient.setAnswer(responsePayload.metadataSdp),
     ]);
+
+    for (let _ = 0; _ < 500; _++) {
+      if (this.streamClient.isConnected() && this.dataClient.isConnected() && this.metadataClient.isConnected()) {
+        return;
+      }
+
+      await Sleep(50);
+    }
+
+    throw new Error("ICE connection failed");
   }
 
   @GuardFactory(GuardFlag.PEER_CONNECTION)
@@ -128,7 +139,6 @@ export class MarionetteClient {
       parseInt(Constraint.iceCredential.username.split(":")[0] + "000") <= Date.now() - 300000
     ) {
       Constraint.iceCredential = (await Request({
-        method: "GET",
         host: `${Constraint.host}/auth/key/credential`,
       })) as MarionetteType.ICECredential;
     }
