@@ -17,7 +17,7 @@ export interface MarionetteConstraint {
 
 export interface MarionetteConfigurations {
   token: string;
-  roomId: string;
+  roomId?: string;
   nickname?: string;
 }
 

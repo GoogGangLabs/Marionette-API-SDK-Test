@@ -17,8 +17,8 @@ export class MarionetteClient {
 
   constructor(config: MarionetteType.MarionetteConfigurations) {
     Constraint.token = config.token;
-    this.roomId = config.roomId;
-    this.nickname = config.nickname || "anonymous";
+    this.roomId = config.roomId || "anonymous room";
+    this.nickname = config.nickname || "anonymous user";
 
     this.streamConfig.deviceId = "";
     this.streamConfig.width = 320;
@@ -31,6 +31,10 @@ export class MarionetteClient {
   /* ========================================== */
 
   public on = (name: EventState, listener: (...args: any[]) => void) => Constraint.event.on(name, listener);
+
+  public setRoomId = (roomId: string) => {
+    this.roomId = roomId;
+  };
 
   @CatchError
   public async init(): Promise<void> {

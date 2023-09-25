@@ -7,12 +7,24 @@ const loadStream = document.getElementById("loadStream");
 const connect = document.getElementById("connect");
 const publish = document.getElementById("publish");
 
+let flag = false;
+let startTime;
+let count = 0;
+
 const client = new MarionetteClient({
-  token: "Input your access token",
+  token:
+    "eyJzZXNzaW9uSWQiOiJmMmI3ZDEwMzk1ZGQ0MWYyYmU1ZmJlNzhlMTRkZjFmMSIsInVpZCI6ImY5YzBiYjE3MjQ1NjRhZjE5NjQ0NjBjNDE5NGU2ZDdmIiwiaWF0IjoxNjk1NTcwNjQwLCJleHAiOjE3MDI3NzA2NDB9.7CFPdoJs67ogPHCHNZzzZ3ALrd7dlQg9lfaCZp8uGgo",
   roomId: "hihi",
 });
 
 client.on("ERROR", (data) => console.log(data));
+client.on("BLENDSHAPE_RESULT", (data) => {
+  if (!flag) {
+    flag = true;
+    startTime = Date.now();
+  }
+  count++;
+});
 
 start.disabled = false;
 
@@ -28,6 +40,11 @@ start.addEventListener("click", async () => {
 });
 
 stop.addEventListener("click", async () => {
+  flag = false;
+  const endTime = Date.now();
+
+  console.log(endTime - startTime, count);
+
   await client.release();
 
   stop.disabled = true;

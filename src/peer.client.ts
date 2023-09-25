@@ -133,6 +133,7 @@ export class RTCPeerClient {
             const dataMessage = optimizationSession.decode(decoded.data[i]);
             const data = optimizationSession.toObject(dataMessage) as OptimizationSession;
             console.log(data);
+            Constraint.event.emit(EventState.BLENDSHAPE_RESULT, undefined);
           }
         };
         break;
