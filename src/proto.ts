@@ -9,7 +9,8 @@ message OptimizationSession {
   string sessionId = 1;
   string roomId = 2;
   int32 sequence = 3;
-  bytes results = 4;
+  float optimizedValue = 4;
+  bytes results = 5;
 }
 
 message SerializedRoomData {

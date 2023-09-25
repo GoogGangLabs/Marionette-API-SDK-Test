@@ -32,10 +32,6 @@ export class MarionetteClient {
 
   public on = (name: EventState, listener: (...args: any[]) => void) => Constraint.event.on(name, listener);
 
-  public setRoomId = (roomId: string) => {
-    this.roomId = roomId;
-  };
-
   @CatchError
   public async init(): Promise<void> {
     await this.initICECredential();
@@ -115,6 +111,7 @@ export class MarionetteClient {
   @GuardFactory(GuardFlag.PEER_CONNECTION)
   @CatchError
   public async publish() {
+    console.log(this);
     await Request({ host: `${Constraint.host}/session/publish` });
   }
 
@@ -123,6 +120,14 @@ export class MarionetteClient {
   public async pause() {
     this.streamClient.pause();
   }
+
+  public setRoomId = (roomId: string) => {
+    this.roomId = roomId;
+  };
+
+  public getRoomId = () => this.roomId;
+
+  public getNickname = () => this.nickname;
 
   public getDevices = async () => {
     return (await navigator.mediaDevices.enumerateDevices()).filter((device) => device.kind === "videoinput");

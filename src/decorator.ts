@@ -2,8 +2,8 @@ import { MarionetteClient } from "./index";
 import { Constraint } from "./constant";
 import { EventState, GuardFlag } from "./enum";
 
-export function GuardFactory(...flags: GuardFlag[]) {
-  return function (_: MarionetteClient, __: string | symbol, descriptor: PropertyDescriptor) {
+export const GuardFactory = (...flags: GuardFlag[]) => {
+  return (_: MarionetteClient, __: string | symbol, descriptor: PropertyDescriptor) => {
     const total = flags.reduce((a, b) => a + b, 0);
     const method = descriptor.value;
 
@@ -32,9 +32,9 @@ export function GuardFactory(...flags: GuardFlag[]) {
 
     return descriptor;
   };
-}
+};
 
-export function CatchError(_: MarionetteClient, __: any, descriptor: PropertyDescriptor) {
+export const CatchError = (_: MarionetteClient, __: any, descriptor: PropertyDescriptor) => {
   const method = descriptor.value;
 
   descriptor.value = async function (this: MarionetteClient, ...args: any) {
@@ -44,4 +44,4 @@ export function CatchError(_: MarionetteClient, __: any, descriptor: PropertyDes
       Constraint.event.emit(EventState.ERROR, err);
     }
   };
-}
+};

@@ -37,8 +37,9 @@ export interface OptimizationSession {
   roomId: string;
   // fps: number; todo
   sequence: number;
+  optimizedValue: number;
   results: Buffer;
-  blendshapes?: Float32Array;
+  blendshapes?: number[];
 }
 
 export class FetchConfigurations<T> {

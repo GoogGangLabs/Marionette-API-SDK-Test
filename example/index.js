@@ -12,7 +12,7 @@ let startTime;
 let count = 0;
 
 const client = new MarionetteClient({
-  token: "Input your token",
+  token: "Input your access token",
   roomId: "hihi",
 });
 
@@ -33,6 +33,9 @@ window.onbeforeunload = async (_) => {
 
 start.addEventListener("click", async () => {
   await client.init();
+
+  document.getElementById("roomId").innerText = client.getRoomId();
+  document.getElementById("nickname").innerText = client.getNickname();
 
   stop.disabled = false;
   loadStream.disabled = false;
