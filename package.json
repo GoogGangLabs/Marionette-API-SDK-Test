@@ -1,6 +1,6 @@
 {
   "name": "@marionette-api/sdk-test-inner",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Marionette API to SDK",
   "type": "module",
   "main": "./lib/index.js",
@@ -25,7 +25,7 @@
   },
   "devDependencies": {
     "@types/node": "^18.16.3",
-    "@types/pako": "^2.0.0",
+    "@types/pako": "^2.0.1",
     "@types/protobufjs": "^6.0.0",
     "esbuild": "^0.19.3",
     "ts-loader": "^9.4.2",

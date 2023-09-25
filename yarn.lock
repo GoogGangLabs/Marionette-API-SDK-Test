@@ -220,10 +220,10 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-18.16.3.tgz#6bda7819aae6ea0b386ebc5b24bdf602f1b42b01"
   integrity sha512-OPs5WnnT1xkCBiuQrZA4+YAV4HEJejmHneyraIaxsbev5yCEr6KMwINNFP9wQeFIw8FWcoTqF3vQsa5CDaI+8Q==
 
-"@types/pako@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@types/pako/-/pako-2.0.0.tgz#12ab4c19107528452e73ac99132c875ccd43bdfb"
-  integrity sha512-10+iaz93qR5WYxTo+PMifD5TSxiOtdRaxBf7INGGXMQgTCu8Z/7GYWYFUOS3q/G0nE5boj1r4FEB+WSy7s5gbA==
+"@types/pako@^2.0.1":
+  version "2.0.1"
+  resolved "https://registry.npmjs.org/@types/pako/-/pako-2.0.1.tgz#99e4b7ae6a8560c5928d7f31e89a394e1e6fd169"
+  integrity sha512-fXhui1fHdLrUR0KEyQsBzqdi3Z+MitnRcpI2eeFJyzaRdqO2miX/BDz2Hh0VdkBbrWprgcQ+ItFmbdKYdbMjvg==
 
 "@types/protobufjs@^6.0.0":
   version "6.0.0"

@@ -1,3 +1,4 @@
+import * as pako from "pako";
 import { EventState } from "./enum";
 import { Constraint, Sleep } from "./constant";
 import { OptimizationSession, OptimizationSessionList, PeerType } from "./types";
@@ -132,8 +133,11 @@ export class RTCPeerClient {
           for (let i = 0; i < decoded.data.length; i++) {
             const dataMessage = optimizationSession.decode(decoded.data[i]);
             const data = optimizationSession.toObject(dataMessage) as OptimizationSession;
+            const decompressed = pako.inflateRaw(data.results);
+            data.blendshapes = new Float32Array(new Int16Array(decompressed).map((elem) => elem / 10000));
             console.log(data);
-            Constraint.event.emit(EventState.BLENDSHAPE_RESULT, undefined);
+
+            Constraint.event.emit(EventState.BLENDSHAPE_RESULT, data);
           }
         };
         break;
