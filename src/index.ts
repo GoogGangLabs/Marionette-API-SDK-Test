@@ -6,11 +6,11 @@ import { Request } from "./request";
 import * as MarionetteType from "./types";
 
 export class MarionetteClient {
-  private readonly streamConfig: MarionetteType.StreamConfigurations = {};
+  private streamConfig: MarionetteType.StreamConfigurations = {};
 
-  protected readonly streamClient = new RTCPeerClient("stream");
-  protected readonly dataClient = new RTCPeerClient("data");
-  protected readonly metadataClient = new RTCPeerClient("metadata");
+  protected streamClient = new RTCPeerClient("stream");
+  protected dataClient = new RTCPeerClient("data");
+  protected metadataClient = new RTCPeerClient("metadata");
 
   protected roomId: string = undefined;
   protected nickname: string = undefined;
