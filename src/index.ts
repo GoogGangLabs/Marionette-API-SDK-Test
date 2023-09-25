@@ -99,12 +99,12 @@ export class MarionetteClient {
       this.metadataClient.setAnswer(responsePayload.metadataSdp),
     ]);
 
-    for (let _ = 0; _ < 500; _++) {
+    for (let _ = 0; _ < 2000; _++) {
       if (this.streamClient.isConnected() && this.dataClient.isConnected() && this.metadataClient.isConnected()) {
         return;
       }
 
-      await Sleep(50);
+      await Sleep(10);
     }
 
     throw new Error("ICE connection failed");
@@ -126,6 +126,10 @@ export class MarionetteClient {
 
   public setRoomId = (roomId: string) => {
     this.roomId = roomId;
+  };
+
+  public setNickname = (nickname: string) => {
+    this.nickname = nickname;
   };
 
   @GuardFactory(GuardFlag.INIT)

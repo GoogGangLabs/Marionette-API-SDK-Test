@@ -53,9 +53,9 @@ export class RTCPeerClient {
 
   public getStream = () => this.stream;
   public getOffer = async (): Promise<string> => {
-    for (let _ = 0; _ < 20; _++) {
+    for (let _ = 0; _ < 2000; _++) {
       if (this.offer) return this.offer;
-      await Sleep(500);
+      await Sleep(10);
     }
 
     throw new Error("ICE candidate failed");

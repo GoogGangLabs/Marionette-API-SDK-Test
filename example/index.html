@@ -9,7 +9,7 @@
       button {
         width: 150px;
         height: 60px;
-        margin: 20px 10px;
+        margin: 10px 10px;
       }
 
       video,
@@ -19,15 +19,20 @@
     </style>
   </head>
   <body>
+    <input id="input" style="width: 250px; height: 30px; margin-top: 20px; margin-left: 10px" />
+    <button id="code" style="width: 70px; height: 37px">code</button>
+    <input id="roomId" style="width: 150px; height: 30px; margin-top: 20px; margin-left: 10px" value="room-id" />
+    <input id="nickname" style="width: 150px; height: 30px; margin-top: 20px; margin-left: 10px" value="nickname" />
+    <br />
     <button id="start" disabled>init</button>
     <button id="stop" disabled>release</button>
     <button id="loadStream" disabled>loadStream</button>
     <button id="connect" disabled>connect</button>
     <button id="publish" disabled>publish</button>
     <br />
-    <h3>Room ID&nbsp;&nbsp;&nbsp; : <label id="roomId"></label></h3>
-    <h3>Session ID : <label id="sessionId"></label></h3>
-    <h3>Nickname&nbsp; : <label id="nickname"></label></h3>
+    <h3>Room ID&nbsp;&nbsp;&nbsp; : <label id="label-roomId"></label></h3>
+    <h3>Session ID : <label id="label-sessionId"></label></h3>
+    <h3>Nickname&nbsp; : <label id="label-nickname"></label></h3>
     <br />
     <video id="video" width="640px" height="480px"></video>
     <canvas id="guide"></canvas>
