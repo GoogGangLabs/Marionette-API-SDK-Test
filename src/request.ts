@@ -16,7 +16,7 @@ export const Request = async <T = any, K = any>(config: FetchConfigurations<T>):
       if (response.ok) return payload;
       if (response.status !== 401) throw payload;
 
-      Constraint.token = (await Request({ host: `${Constraint.host}/auth/token` })).token;
+      Constraint.token = (await Request({ method: "PATCH", host: `${Constraint.host}/auth/token` })).token;
 
       return await Request(config);
     })
