@@ -7,8 +7,8 @@
     "moduleResolution": "node",
     "sourceMap": true,
     "outDir": "lib",
-    "strict": true,
-    "strictNullChecks": false,
+    // "strict": true,
+    // "strictNullChecks": false,
     "baseUrl": "src",
     "declaration": true,
     "paths": {
