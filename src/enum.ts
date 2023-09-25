@@ -2,7 +2,7 @@ const EventState = {
   LOAD_STREAM: "LOAD_STREAM",
   ICE_CANDIDATE: "ICE_CANDIDATE",
   ICE_CONNECTION: "ICE_CONNECTION",
-  STREAM_RESULT: "STREAM_RESULT",
+  BLENDSHAPE_RESULT: "BLENDSHAPE_RESULT",
   ERROR: "ERROR",
 } as const;
 type EventState = (typeof EventState)[keyof typeof EventState];
