@@ -48,6 +48,13 @@ export class FetchConfigurations<T> {
   body?: T;
 }
 
+export interface IceCredentialResponse {
+  sessionId: string;
+  username: string;
+  credential: string;
+  iceHost: string;
+}
+
 export interface SignalingRequest {
   roomId: string;
   nickname: string;

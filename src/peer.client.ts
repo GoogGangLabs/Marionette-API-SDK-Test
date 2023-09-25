@@ -128,17 +128,20 @@ export class RTCPeerClient {
     switch (this.type) {
       case "data":
         this.dataChannel.onmessage = (event) => {
+          const list = [];
           const listMessage = serializedRoomData.decode(new Uint8Array(event.data));
           const decoded = serializedRoomData.toObject(listMessage) as OptimizationSessionList;
           for (let i = 0; i < decoded.data.length; i++) {
             const dataMessage = optimizationSession.decode(decoded.data[i]);
             const data = optimizationSession.toObject(dataMessage) as OptimizationSession;
             const decompressed = pako.inflateRaw(data.results);
-            data.blendshapes = Array.from(new Int16Array(decompressed)).map((elem) => elem / data.optimizedValue);
+            data.blendshapes = Array.from(new Int16Array(decompressed.buffer)).map(
+              (elem) => elem / data.optimizedValue
+            );
             console.log(data);
-
-            Constraint.event.emit(EventState.BLENDSHAPE_RESULT, data);
+            list.push(data);
           }
+          Constraint.event.emit(EventState.BLENDSHAPE_RESULT, list);
         };
         break;
       case "metadata": // todo: 구현해야 함

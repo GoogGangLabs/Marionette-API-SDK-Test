@@ -12,8 +12,7 @@ let startTime;
 let count = 0;
 
 const client = new MarionetteClient({
-  token:
-    "eyJzZXNzaW9uSWQiOiJmMmI3ZDEwMzk1ZGQ0MWYyYmU1ZmJlNzhlMTRkZjFmMSIsInVpZCI6ImY5YzBiYjE3MjQ1NjRhZjE5NjQ0NjBjNDE5NGU2ZDdmIiwiaWF0IjoxNjk1NTcwNjQwLCJleHAiOjE3MDI3NzA2NDB9.7CFPdoJs67ogPHCHNZzzZ3ALrd7dlQg9lfaCZp8uGgo",
+  token: "Input your access token",
   roomId: "hihi",
 });
 
@@ -36,6 +35,7 @@ start.addEventListener("click", async () => {
   await client.init();
 
   document.getElementById("roomId").innerText = client.getRoomId();
+  document.getElementById("sessionId").innerText = client.getSessionId();
   document.getElementById("nickname").innerText = client.getNickname();
 
   stop.disabled = false;

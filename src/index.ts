@@ -13,6 +13,7 @@ export class MarionetteClient {
   protected metadataClient = new RTCPeerClient("metadata");
 
   protected roomId: string = undefined;
+  protected sessionId: string = undefined;
   protected nickname: string = undefined;
 
   constructor(config: MarionetteType.MarionetteConfigurations) {
@@ -126,6 +127,11 @@ export class MarionetteClient {
     this.roomId = roomId;
   };
 
+  @GuardFactory(GuardFlag.INIT)
+  public getSessionId() {
+    return this.sessionId;
+  }
+
   public getRoomId = () => this.roomId;
 
   public getNickname = () => this.nickname;
@@ -148,9 +154,14 @@ export class MarionetteClient {
       !Constraint.iceCredential.username ||
       parseInt(Constraint.iceCredential.username.split(":")[0] + "000") <= Date.now() - 300000
     ) {
-      Constraint.iceCredential = (await Request({
+      const response = (await Request({
         host: `${Constraint.host}/auth/key/credential`,
-      })) as MarionetteType.ICECredential;
+      })) as MarionetteType.IceCredentialResponse;
+
+      this.sessionId = response.sessionId;
+      Constraint.iceCredential.username = response.username;
+      Constraint.iceCredential.credential = response.credential;
+      Constraint.iceCredential.iceHost = response.iceHost;
     }
   };
 
