@@ -12,7 +12,8 @@ let startTime;
 let count = 0;
 
 const client = new MarionetteClient({
-  token: "Input your access token",
+  token:
+    "eyJzZXNzaW9uSWQiOiJmMmI3ZDEwMzk1ZGQ0MWYyYmU1ZmJlNzhlMTRkZjFmMSIsInVpZCI6ImY5YzBiYjE3MjQ1NjRhZjE5NjQ0NjBjNDE5NGU2ZDdmIiwiaWF0IjoxNjk1NTcwNjQwLCJleHAiOjE3MDI3NzA2NDB9.7CFPdoJs67ogPHCHNZzzZ3ALrd7dlQg9lfaCZp8uGgo",
   roomId: "hihi",
 });
 

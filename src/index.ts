@@ -112,6 +112,7 @@ export class MarionetteClient {
   @CatchError
   public async publish() {
     console.log(this);
+    this.streamClient.publish();
     await Request({ host: `${Constraint.host}/session/publish` });
   }
 
