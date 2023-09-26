@@ -14,11 +14,16 @@ export const Request = async <T = any, K = any>(config: FetchConfigurations<T>):
       const payload = await response.json();
 
       if (response.ok) return payload;
-      if (response.status !== 401) throw payload;
 
-      Constraint.token = (await Request({ method: "PATCH", host: `${Constraint.host}/auth/token` })).token;
+      throw payload;
 
-      return await Request(config);
+      // todo: token refresh 기능 구현 시 복구
+
+      // if (response.status !== 401) throw payload;
+
+      // Constraint.token = (await Request({ method: "PATCH", host: `${Constraint.host}/auth/token` })).token;
+
+      // return await Request(config);
     })
     .catch((err) => {
       throw err;
