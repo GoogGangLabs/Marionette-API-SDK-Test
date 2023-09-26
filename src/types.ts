@@ -28,6 +28,8 @@ export interface StreamConfigurations {
   frameRate?: number;
 }
 
+export type BlendshapeResult = number[];
+
 export interface OptimizationSessionList {
   data: Uint8Array[];
 }
@@ -39,7 +41,7 @@ export interface OptimizationSession {
   sequence: number;
   optimizedValue: number;
   results: Buffer;
-  blendshapes?: number[];
+  blendshapes?: BlendshapeResult;
 }
 
 export class FetchConfigurations<T> {
