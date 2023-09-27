@@ -147,7 +147,6 @@ export class RTCPeerClient {
               data.optimizedValue,
               Array.from(new Int16Array(decompressed.buffer))
             );
-            console.log(data);
             list.push(data);
           }
           Constraint.event.emit(EventState.BLENDSHAPE_RESULT, list);

@@ -1,7 +1,7 @@
 import { Constraint, Sleep } from "./constant";
 import { EventState, GuardFlag } from "./enum";
 import { RTCPeerClient } from "./peer.client";
-import { CatchError, ClassBinding, GuardFactory } from "./decorator";
+import { ErrorFactory, ClassBinding, GuardFactory } from "./decorator";
 import { Request } from "./request";
 import * as MarionetteType from "./types";
 
@@ -34,7 +34,7 @@ export class MarionetteClient {
 
   public on = (name: EventState, listener: (...args: any[]) => void) => Constraint.event.on(name, listener);
 
-  @CatchError
+  @ErrorFactory()
   public async init(): Promise<void> {
     await this.initICECredential();
     await this.streamClient.init();
@@ -43,7 +43,7 @@ export class MarionetteClient {
   }
 
   @GuardFactory(GuardFlag.INIT)
-  @CatchError
+  @ErrorFactory()
   public async release() {
     this.streamClient.release();
     this.dataClient.release();
@@ -53,7 +53,7 @@ export class MarionetteClient {
   }
 
   @GuardFactory(GuardFlag.INIT)
-  @CatchError
+  @ErrorFactory()
   public async loadStream(config?: MarionetteType.StreamConfigurations): Promise<MediaStream> {
     this.setStreamConfiguration(config || {});
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -70,7 +70,7 @@ export class MarionetteClient {
   }
 
   @GuardFactory(GuardFlag.STREAM)
-  @CatchError
+  @ErrorFactory()
   public async connect() {
     await Promise.all([this.streamClient.setOffer(), this.dataClient.setOffer(), this.metadataClient.setOffer()]);
 
@@ -92,7 +92,6 @@ export class MarionetteClient {
       body: requestPayload,
     });
 
-    console.log(responsePayload);
     await Promise.all([
       this.streamClient.setAnswer(responsePayload.streamSdp),
       this.dataClient.setAnswer(responsePayload.dataSdp),
@@ -111,15 +110,14 @@ export class MarionetteClient {
   }
 
   @GuardFactory(GuardFlag.PEER_CONNECTION)
-  @CatchError
+  @ErrorFactory()
   public async publish() {
-    console.log(this);
     this.streamClient.publish();
     await Request({ host: `${Constraint.host}/session/publish` });
   }
 
   @GuardFactory(GuardFlag.PEER_CONNECTION)
-  @CatchError
+  @ErrorFactory()
   public async pause() {
     this.streamClient.pause();
   }

@@ -50,14 +50,20 @@ export const GuardFactory = (...flags: GuardFlag[]) => {
   };
 };
 
-export const CatchError = (_: MarionetteClient, __: any, descriptor: PropertyDescriptor) => {
-  const method = descriptor.value;
+export const ErrorFactory = (fatal = true) => {
+  return (_: MarionetteClient, __: any, descriptor: PropertyDescriptor) => {
+    const method = descriptor.value;
 
-  descriptor.value = async function (this: MarionetteClient, ...args: any) {
-    try {
-      return await method.apply(this, args);
-    } catch (err) {
-      Constraint.event.emit(EventState.ERROR, err);
-    }
+    descriptor.value = async function (this: MarionetteClient, ...args: any) {
+      try {
+        return await method.apply(this, args);
+      } catch (err) {
+        if (fatal) {
+          throw err;
+        } else {
+          Constraint.event.emit(EventState.ERROR, err);
+        }
+      }
+    };
   };
 };
