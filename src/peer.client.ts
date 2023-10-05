@@ -1,10 +1,11 @@
-import pako from "pako";
-import { EventState } from "./enum";
-import { Constraint, Sleep } from "./constant";
-import { OptimizationSession, OptimizationSessionList, PeerType } from "./types";
-import { optimizationSession, serializedRoomData } from "./proto";
-import { ClassBinding } from "./decorator";
-import { BlendshapeFilter } from "./filter";
+import pako from 'pako';
+import { EventState } from './enum';
+import { Constraint, Sleep } from './constant';
+import { MetadataTemplate, OptimizationSession, OptimizationSessionList, PeerType } from './types';
+import { metadataTemplate, optimizationSession, serializedRoomData } from './proto';
+import { ClassBinding } from './decorator';
+import { BlendshapeFilter } from './filter';
+import { consumeMetadata, serializeMetadata } from './metadata';
 
 @ClassBinding
 export class RTCPeerClient {
@@ -33,7 +34,7 @@ export class RTCPeerClient {
     this.release();
 
     await this.createPeerConnection();
-    if (this.type !== "stream") this.createDataChannel();
+    if (this.type !== 'stream') this.createDataChannel();
   };
 
   public release = () => {
@@ -55,12 +56,12 @@ export class RTCPeerClient {
 
   public getStream = () => this.stream;
   public getOffer = async (): Promise<string> => {
-    for (let _ = 0; _ < 2000; _++) {
+    for (let _ = 0; _ < 3000; _++) {
       if (this.offer) return this.offer;
       await Sleep(10);
     }
 
-    throw new Error("ICE candidate failed");
+    throw new Error('ICE candidate failed');
   };
 
   public setStream = (stream: MediaStream) => {
@@ -95,6 +96,10 @@ export class RTCPeerClient {
     this.stream.getTracks().forEach((track) => (track.enabled = false));
   };
 
+  public emit = (buffer: Uint8Array) => {
+    this.dataChannel.send(buffer);
+  };
+
   /* ========================================== */
   /*               Private Method               */
   /* ========================================== */
@@ -118,45 +123,45 @@ export class RTCPeerClient {
     };
 
     this.peerConnection.onconnectionstatechange = (_) => {
-      console.log(this.type, ":", this.peerConnection.connectionState);
-      if (this.peerConnection.connectionState === "connected") {
+      console.log(this.type, ':', this.peerConnection.connectionState);
+      if (this.peerConnection.connectionState === 'connected') {
         this.connectStatus = true;
       }
     };
   };
 
   private createDataChannel = () => {
-    this.dataChannel = this.peerConnection.createDataChannel("message");
+    this.dataChannel = this.peerConnection.createDataChannel('message');
     this.dataChannel.onerror = (event) => Constraint.event.emit(EventState.ERROR, event);
 
-    switch (this.type) {
-      case "data":
-        this.dataChannel.onmessage = (event) => {
-          const list = [];
-          const listMessage = serializedRoomData.decode(new Uint8Array(event.data));
-          const decoded = serializedRoomData.toObject(listMessage) as OptimizationSessionList;
-          for (let i = 0; i < decoded.data.length; i++) {
-            const dataMessage = optimizationSession.decode(decoded.data[i]);
-            const data = optimizationSession.toObject(dataMessage) as OptimizationSession;
+    if (this.type === 'data') {
+      this.dataChannel.onmessage = (event) => {
+        const list = [];
+        const listMessage = serializedRoomData.decode(new Uint8Array(event.data));
+        const decoded = serializedRoomData.toObject(listMessage) as OptimizationSessionList;
+        for (let i = 0; i < decoded.data.length; i++) {
+          const dataMessage = optimizationSession.decode(decoded.data[i]);
+          const data = optimizationSession.toObject(dataMessage) as OptimizationSession;
 
-            this.blendshapeFilter.init(data.sessionId);
+          this.blendshapeFilter.init(data.sessionId);
 
-            const decompressed = pako.inflateRaw(data.results);
-            data.blendshapes = this.blendshapeFilter.filter(
-              data.sessionId,
-              data.optimizedValue,
-              Array.from(new Int16Array(decompressed.buffer))
-            );
-            list.push(data);
-          }
-          Constraint.event.emit(EventState.BLENDSHAPE_RESULT, list);
-        };
-        break;
-      case "metadata": // todo: 구현해야 함
-        this.dataChannel.onmessage = (event) => {
-          console.log(event);
-        };
-        break;
+          const decompressed = pako.inflateRaw(data.results);
+          data.blendshapes = this.blendshapeFilter.filter(
+            data.sessionId,
+            data.optimizedValue,
+            Array.from(new Int16Array(decompressed.buffer)),
+          );
+          list.push(data);
+        }
+        Constraint.event.emit(EventState.BLENDSHAPE_EVENT, list);
+      };
+    } else {
+      this.dataChannel.onmessage = (event) => {
+        const message = metadataTemplate.decode(new Uint8Array(event.data));
+        const data = metadataTemplate.toObject(message) as MetadataTemplate;
+
+        consumeMetadata(data);
+      };
     }
   };
 

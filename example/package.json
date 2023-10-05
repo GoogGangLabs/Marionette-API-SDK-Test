@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "license": "MIT",
   "scripts": {
-    "start": "cd .. && yarn build && cd example && cp -R ../lib ./ && webpack serve"
+    "build": "cd .. && yarn build && cd example && cp -R ../lib ./",
+    "serve": "webpack serve",
+    "start": "yarn build && yarn serve"
   },
   "devDependencies": {
     "html-webpack-plugin": "^5.5.1",

@@ -1,6 +1,6 @@
-import { MarionetteClient } from "./index";
-import { Constraint } from "./constant";
-import { EventState, GuardFlag } from "./enum";
+import { MarionetteClient } from './index';
+import { Constraint } from './constant';
+import { EventState, GuardFlag } from './enum';
 
 export const ClassBinding = (target: any) => {
   const keys = Object.getOwnPropertyNames(target.prototype);
@@ -8,7 +8,7 @@ export const ClassBinding = (target: any) => {
   keys.forEach((key) => {
     const descriptor = Object.getOwnPropertyDescriptor(target.prototype, key);
 
-    if (descriptor.value instanceof Function && key !== "constructor") {
+    if (descriptor.value instanceof Function && key !== 'constructor') {
       Object.defineProperty(target.prototype, key, {
         get() {
           return descriptor.value.bind(this);
@@ -30,17 +30,17 @@ export const GuardFactory = (...flags: GuardFlag[]) => {
         this.roomId !== undefined &&
         (!this.streamClient.isInitialized() || !this.dataClient.isInitialized() || !this.metadataClient.isInitialized())
       ) {
-        throw new Error("Marionette client is not initialized");
+        throw new Error('Marionette client is not initialized');
       }
 
       if (total & GuardFlag.STREAM && !this.streamClient.isStreamSet()) {
-        throw new Error("MediaStream is not set");
+        throw new Error('MediaStream is not set');
       }
       if (
         total & GuardFlag.PEER_CONNECTION &&
         (!this.streamClient.isConnected() || !this.dataClient.isConnected() || !this.metadataClient.isConnected())
       ) {
-        throw new Error("PeerConnection is not Connected");
+        throw new Error('PeerConnection is not Connected');
       }
 
       return method.apply(this, args);

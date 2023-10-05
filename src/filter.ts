@@ -1,5 +1,5 @@
-import { ClassBinding } from "./decorator";
-import { BlendshapeResult } from "./types";
+import { ClassBinding } from './decorator';
+import { BlendshapeResult } from './types';
 
 @ClassBinding
 class LowPassFilter {
