@@ -41,12 +41,14 @@ export class MarionetteClient {
 
   @Decorator.GuardFactory(Enum.GuardFlag.PEER_CONNECTION)
   @Decorator.ErrorFactory()
-  public emit(data: Type.ChatTemplate | any, target?: string[]) {
+  public emit(data: Type.ChatTemplate | object, target?: string[]) {
     const metadata = serializeMetadata(this.sessionId, data, target);
     this.metadataClient.emit(metadata);
   }
 
-  public on = (name: Enum.EventState, listener: (...args: any[]) => void) => Constraint.event.on(name, listener);
+  public on = <K extends keyof Type.EventMap>(name: K, listener: (event: Type.EventMap[K]) => void) => {
+    return Constraint.event.on(name, listener);
+  };
 
   @Decorator.ErrorFactory()
   public async init(): Promise<void> {

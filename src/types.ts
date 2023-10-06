@@ -3,6 +3,32 @@ import { MetadataType, SystemEventType, TargetType, UserRole, UserState } from '
 
 export type PeerType = 'stream' | 'data' | 'metadata';
 
+export type MetadataTypes = UserTemplate | RoomTemplate | ChatTemplate | SystemTemplate | any;
+
+class Metadata<T = MetadataTypes> implements MetadataTemplate {
+  source: string;
+  timestamp: number;
+  data: T;
+
+  constructor(source: string, timestamp: number) {
+    this.source = source;
+    this.timestamp = timestamp;
+  }
+}
+
+export interface EventMap {
+  LOAD_STREAM: MediaStream;
+  ICE_CANDIDATE: RTCIceCandidateType;
+  ICE_CONNECTION: RTCPeerConnectionState;
+  BLENDSHAPE_EVENT: OptimizationSession[];
+  METADATA_USER_EVENT: Metadata<UserTemplate>;
+  METADATA_ROOM_EVENT: Metadata<RoomTemplate>;
+  METADATA_CHAT_EVENT: Metadata<ChatTemplate>;
+  METADATA_SYSTEM_EVENT: Metadata<SystemTemplate>;
+  METADATA_OBJECT_EVENT: Metadata<any>;
+  ERROR: any;
+}
+
 export interface ICECredential {
   username: string;
   credential: string;

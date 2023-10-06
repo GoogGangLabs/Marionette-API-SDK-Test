@@ -5,7 +5,7 @@ import { MetadataTemplate, OptimizationSession, OptimizationSessionList, PeerTyp
 import { metadataTemplate, optimizationSession, serializedRoomData } from './proto';
 import { ClassBinding } from './decorator';
 import { BlendshapeFilter } from './filter';
-import { consumeMetadata, serializeMetadata } from './metadata';
+import { consumeMetadata } from './metadata';
 
 @ClassBinding
 export class RTCPeerClient {
@@ -136,7 +136,7 @@ export class RTCPeerClient {
 
     if (this.type === 'data') {
       this.dataChannel.onmessage = (event) => {
-        const list = [];
+        const list: OptimizationSession[] = [];
         const listMessage = serializedRoomData.decode(new Uint8Array(event.data));
         const decoded = serializedRoomData.toObject(listMessage) as OptimizationSessionList;
         for (let i = 0; i < decoded.data.length; i++) {
