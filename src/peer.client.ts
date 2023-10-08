@@ -4,13 +4,11 @@ import { Constraint, Sleep } from './constant';
 import { MetadataTemplate, OptimizationSession, OptimizationSessionList, PeerType } from './types';
 import { metadataTemplate, optimizationSession, serializedRoomData } from './proto';
 import { ClassBinding } from './decorator';
-import { BlendshapeFilter } from './filter';
 import { consumeMetadata } from './metadata';
 
 @ClassBinding
 export class RTCPeerClient {
   private type: PeerType;
-  private blendshapeFilter = new BlendshapeFilter();
 
   private peerConnection: RTCPeerConnection = null;
   private dataChannel: RTCDataChannel = null;
@@ -142,15 +140,9 @@ export class RTCPeerClient {
         for (let i = 0; i < decoded.data.length; i++) {
           const dataMessage = optimizationSession.decode(decoded.data[i]);
           const data = optimizationSession.toObject(dataMessage) as OptimizationSession;
-
-          this.blendshapeFilter.init(data.sessionId);
-
           const decompressed = pako.inflateRaw(data.results);
-          data.blendshapes = this.blendshapeFilter.filter(
-            data.sessionId,
-            data.optimizedValue,
-            Array.from(new Int16Array(decompressed.buffer)),
-          );
+
+          data.blendshapes = Array.from(new Int16Array(decompressed.buffer));
           list.push(data);
         }
         Constraint.event.emit(EventState.BLENDSHAPE_EVENT, list);
