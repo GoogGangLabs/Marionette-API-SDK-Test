@@ -142,7 +142,7 @@ export class RTCPeerClient {
           const data = optimizationSession.toObject(dataMessage) as OptimizationSession;
           const decompressed = pako.inflateRaw(data.results);
 
-          data.blendshapes = Array.from(new Int16Array(decompressed.buffer));
+          data.blendshapes = Array.from(new Float32Array(decompressed.buffer));
           list.push(data);
         }
         Constraint.event.emit(EventState.BLENDSHAPE_EVENT, list);

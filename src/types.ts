@@ -66,7 +66,6 @@ export interface OptimizationSession {
   roomId: string;
   // fps: number; todo
   sequence: number;
-  optimizedValue: number;
   results: Buffer;
   blendshapes?: BlendshapeResult;
 }
