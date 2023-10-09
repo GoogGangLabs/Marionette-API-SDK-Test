@@ -117,7 +117,7 @@ const init = (validToken) => {
       startTime = Date.now();
     }
     count++;
-    console.log(data);
+    data.forEach((session) => console.log(session));
   });
   client.on(Enum.EventState.METADATA_EVENT, (data) => {
     console.log(data);

@@ -1,7 +1,7 @@
 import pako from 'pako';
 import { EventState } from './enum';
 import { Constraint, Sleep } from './constant';
-import { MetadataTemplate, OptimizationSession, OptimizationSessionList, PeerType } from './types';
+import { MetadataTemplate, OptimizationSession, PeerType } from './types';
 import { metadataTemplate, optimizationSession, serializedRoomData } from './proto';
 import { ClassBinding } from './decorator';
 import { consumeMetadata } from './metadata';
@@ -129,6 +129,8 @@ export class RTCPeerClient {
   };
 
   private createDataChannel = () => {
+    let lastSequence = 0;
+
     this.dataChannel = this.peerConnection.createDataChannel('message');
     this.dataChannel.onerror = (event) => Constraint.event.emit(EventState.ERROR, event);
 
@@ -136,13 +138,19 @@ export class RTCPeerClient {
       this.dataChannel.onmessage = (event) => {
         const list: OptimizationSession[] = [];
         const listMessage = serializedRoomData.decode(new Uint8Array(event.data));
-        const decoded = serializedRoomData.toObject(listMessage) as OptimizationSessionList;
+        const decoded = serializedRoomData.toObject(listMessage);
         for (let i = 0; i < decoded.data.length; i++) {
           const dataMessage = optimizationSession.decode(decoded.data[i]);
           const data = optimizationSession.toObject(dataMessage) as OptimizationSession;
-          const decompressed = pako.inflateRaw(data.results);
 
-          data.blendshapes = Array.from(new Float32Array(decompressed.buffer));
+          /*
+            todo: 이전 sequence 데이터는 버리는 방향으로 일단 구현
+            추후 우선순위 큐 구현
+          */
+          if (data.sequence < lastSequence) continue;
+          lastSequence = data.sequence;
+
+          data.blendshapes = Array.from(new Float32Array(pako.inflateRaw(data.results).buffer));
           list.push(data);
         }
         Constraint.event.emit(EventState.BLENDSHAPE_EVENT, list);
