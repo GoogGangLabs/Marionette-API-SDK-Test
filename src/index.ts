@@ -12,9 +12,9 @@ export { Enum };
 export class MarionetteClient {
   private streamConfig: Type.StreamConfigurations = {};
 
-  protected streamClient = new RTCPeerClient('stream');
-  protected dataClient = new RTCPeerClient('data');
-  protected metadataClient = new RTCPeerClient('metadata');
+  protected mediaClient = new RTCPeerClient('media');
+  protected broadcastClient = new RTCPeerClient('broadcast');
+  protected sessionClient = new RTCPeerClient('session');
 
   protected roomId: string = undefined;
   protected sessionId: string = undefined;
@@ -43,7 +43,7 @@ export class MarionetteClient {
   @Decorator.ErrorFactory()
   public emit(data: Type.ChatTemplate | object, target?: string[]) {
     const metadata = serializeMetadata(this.sessionId, data, target);
-    this.metadataClient.emit(metadata);
+    this.sessionClient.emit(metadata);
   }
 
   public on = <K extends keyof Type.EventMap>(name: K, listener: (event: Type.EventMap[K]) => void) => {
@@ -53,19 +53,19 @@ export class MarionetteClient {
   @Decorator.ErrorFactory()
   public async init(): Promise<void> {
     await this.initICECredential();
-    await this.streamClient.init();
-    await this.dataClient.init();
-    await this.metadataClient.init();
+    await this.mediaClient.init();
+    await this.broadcastClient.init();
+    await this.sessionClient.init();
   }
 
   @Decorator.GuardFactory(Enum.GuardFlag.INIT)
   @Decorator.ErrorFactory()
   public async release() {
-    this.streamClient.release();
-    this.dataClient.release();
-    this.metadataClient.release();
+    this.mediaClient.release();
+    this.broadcastClient.release();
+    this.sessionClient.release();
 
-    await Request({ host: `${Constraint.host}/session/leave` });
+    await Request({ host: `${Constraint.host}/signal/leave` });
   }
 
   @Decorator.GuardFactory(Enum.GuardFlag.INIT)
@@ -81,41 +81,41 @@ export class MarionetteClient {
       },
     });
 
-    this.streamClient.setStream(stream);
+    this.mediaClient.setStream(stream);
     return stream;
   }
 
   @Decorator.GuardFactory(Enum.GuardFlag.STREAM)
   @Decorator.ErrorFactory()
   public async connect() {
-    await Promise.all([this.streamClient.setOffer(), this.dataClient.setOffer(), this.metadataClient.setOffer()]);
+    await Promise.all([this.mediaClient.setOffer(), this.broadcastClient.setOffer(), this.sessionClient.setOffer()]);
 
-    const [streamSdp, dataSdp, metadataSdp] = await Promise.all([
-      this.streamClient.getOffer(),
-      this.dataClient.getOffer(),
-      this.metadataClient.getOffer(),
+    const [mediaSdp, broadcastSdp, sessionSdp] = await Promise.all([
+      this.mediaClient.getOffer(),
+      this.broadcastClient.getOffer(),
+      this.sessionClient.getOffer(),
     ]);
     const requestPayload: Type.SignalingRequest = {
       roomId: this.roomId,
       nickname: this.nickname,
-      streamSdp,
-      dataSdp,
-      metadataSdp,
+      mediaSdp,
+      broadcastSdp,
+      sessionSdp,
     };
 
     const responsePayload: Type.SignalingResponse = await Request({
-      host: `${Constraint.host}/session/join`,
+      host: `${Constraint.host}/signal/join`,
       body: requestPayload,
     });
 
     await Promise.all([
-      this.streamClient.setAnswer(responsePayload.streamSdp),
-      this.dataClient.setAnswer(responsePayload.dataSdp),
-      this.metadataClient.setAnswer(responsePayload.metadataSdp),
+      this.mediaClient.setAnswer(responsePayload.mediaSdp),
+      this.broadcastClient.setAnswer(responsePayload.broadcastSdp),
+      this.sessionClient.setAnswer(responsePayload.sessionSdp),
     ]);
 
     for (let _ = 0; _ < 3000; _++) {
-      if (this.streamClient.isConnected() && this.dataClient.isConnected() && this.metadataClient.isConnected()) {
+      if (this.mediaClient.isConnected() && this.broadcastClient.isConnected() && this.sessionClient.isConnected()) {
         return;
       }
 
@@ -128,14 +128,14 @@ export class MarionetteClient {
   @Decorator.GuardFactory(Enum.GuardFlag.PEER_CONNECTION)
   @Decorator.ErrorFactory()
   public async publish() {
-    this.streamClient.publish();
-    await Request({ host: `${Constraint.host}/session/publish` });
+    this.mediaClient.publish();
+    await Request({ host: `${Constraint.host}/signal/publish` });
   }
 
   @Decorator.GuardFactory(Enum.GuardFlag.PEER_CONNECTION)
   @Decorator.ErrorFactory()
   public async pause() {
-    this.streamClient.pause();
+    this.mediaClient.pause();
   }
 
   public setRoomId = (roomId: string) => {
@@ -161,7 +161,7 @@ export class MarionetteClient {
 
   @Decorator.GuardFactory(Enum.GuardFlag.STREAM)
   public getStream() {
-    return this.streamClient.getStream();
+    return this.mediaClient.getStream();
   }
 
   /* ========================================== */

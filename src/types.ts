@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
 import { MetadataType, SystemEventType, TargetType, UserRole, UserState } from './enum';
 
-export type PeerType = 'stream' | 'data' | 'metadata';
+export type PeerType = 'media' | 'broadcast' | 'session';
 
 export type MetadataTypes = UserTemplate | RoomTemplate | ChatTemplate | SystemTemplate | any;
 
@@ -86,15 +86,15 @@ export interface IceCredentialResponse {
 export interface SignalingRequest {
   roomId: string;
   nickname: string;
-  streamSdp: string;
-  dataSdp: string;
-  metadataSdp: string;
+  mediaSdp: string;
+  broadcastSdp: string;
+  sessionSdp: string;
 }
 
 export interface SignalingResponse {
-  streamSdp: string;
-  dataSdp: string;
-  metadataSdp: string;
+  mediaSdp: string;
+  broadcastSdp: string;
+  sessionSdp: string;
 }
 
 export class MetadataTemplate {

@@ -28,17 +28,19 @@ export const GuardFactory = (...flags: GuardFlag[]) => {
         total & GuardFlag.INIT &&
         Constraint.token !== undefined &&
         this.roomId !== undefined &&
-        (!this.streamClient.isInitialized() || !this.dataClient.isInitialized() || !this.metadataClient.isInitialized())
+        (!this.mediaClient.isInitialized() ||
+          !this.broadcastClient.isInitialized() ||
+          !this.sessionClient.isInitialized())
       ) {
         throw new Error('Marionette client is not initialized');
       }
 
-      if (total & GuardFlag.STREAM && !this.streamClient.isStreamSet()) {
+      if (total & GuardFlag.STREAM && !this.mediaClient.isStreamSet()) {
         throw new Error('MediaStream is not set');
       }
       if (
         total & GuardFlag.PEER_CONNECTION &&
-        (!this.streamClient.isConnected() || !this.dataClient.isConnected() || !this.metadataClient.isConnected())
+        (!this.mediaClient.isConnected() || !this.broadcastClient.isConnected() || !this.sessionClient.isConnected())
       ) {
         throw new Error('PeerConnection is not Connected');
       }

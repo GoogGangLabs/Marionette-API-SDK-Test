@@ -32,7 +32,7 @@ export class RTCPeerClient {
     this.release();
 
     await this.createPeerConnection();
-    if (this.type !== 'stream') this.createDataChannel();
+    if (this.type !== 'media') this.createDataChannel();
   };
 
   public release = () => {
@@ -134,7 +134,7 @@ export class RTCPeerClient {
     this.dataChannel = this.peerConnection.createDataChannel('message');
     this.dataChannel.onerror = (event) => Constraint.event.emit(EventState.ERROR, event);
 
-    if (this.type === 'data') {
+    if (this.type === 'broadcast') {
       this.dataChannel.onmessage = (event) => {
         const list: OptimizationSession[] = [];
         const listMessage = serializedRoomData.decode(new Uint8Array(event.data));
