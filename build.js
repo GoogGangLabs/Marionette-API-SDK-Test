@@ -1,27 +1,28 @@
-import esbuild from "esbuild";
+import esbuild from 'esbuild';
 
 const baseConfig = {
-  entryPoints: ["src/index.ts"],
-  outdir: "lib",
+  entryPoints: ['src/index.ts'],
+  outdir: 'lib',
   bundle: true,
 };
 
 Promise.all([
   esbuild.build({
     ...baseConfig,
-    format: "cjs",
+    format: 'cjs',
+    // todo: rollback
     // minify: true,
     outExtension: {
-      ".js": ".cjs",
+      '.js': '.cjs',
     },
   }),
 
   esbuild.build({
     ...baseConfig,
-    format: "esm",
+    format: 'esm',
     // minify: true,
   }),
 ]).catch(() => {
-  console.log("Build failed");
+  console.log('Build failed');
   process.exit(1);
 });

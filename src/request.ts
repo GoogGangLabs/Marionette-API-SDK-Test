@@ -1,5 +1,5 @@
-import { Constraint } from './constant';
-import { FetchConfigurations } from './types';
+import { Constraint } from './domain/constant';
+import { FetchConfigurations } from './domain/types';
 
 export const Request = async <T = any, K = any>(config: FetchConfigurations<T>): Promise<K> => {
   if (!Constraint.token) throw new Error('Access token is empty');

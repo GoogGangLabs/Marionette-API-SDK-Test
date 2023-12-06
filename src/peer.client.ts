@@ -1,17 +1,24 @@
 import pako from 'pako';
-import { EventState } from './enum';
-import { Constraint, Sleep } from './constant';
-import { MetadataTemplate, OptimizationSession, PeerType } from './types';
-import { metadataTemplate, optimizationSession, serializedRoomData } from './proto';
+import { EventState } from './domain/enum';
+import { Constraint, Sleep } from './domain/constant';
+import { LatencyManager, StreamSession } from './domain/types';
 import { ClassBinding } from './decorator';
 import { consumeMetadata } from './metadata';
+import { SerializedStream, StreamStruct } from './pb/stream';
+import { SessionTemplate } from './pb/session';
+import { RequestSource } from './pb/constraint';
+import { Request } from './request';
 
 @ClassBinding
 export class RTCPeerClient {
-  private type: PeerType;
+  private type: RequestSource;
+
+  private sessionId: string;
+  private roomId: string = undefined;
 
   private peerConnection: RTCPeerConnection = null;
   private dataChannel: RTCDataChannel = null;
+  private latencyManager: LatencyManager = null;
   private stream: MediaStream = null;
   private offer: string = null;
 
@@ -20,7 +27,7 @@ export class RTCPeerClient {
   private connectStatus: boolean = false;
   private publishStatus: boolean = false;
 
-  constructor(type: PeerType) {
+  constructor(type: RequestSource) {
     this.type = type;
   }
 
@@ -28,11 +35,13 @@ export class RTCPeerClient {
   /*                Public Method               */
   /* ========================================== */
 
-  public init = async (): Promise<void> => {
-    this.release();
+  public init = async (sessionId: string): Promise<void> => {
+    this.sessionId = sessionId;
 
+    this.release();
     await this.createPeerConnection();
-    if (this.type !== 'media') this.createDataChannel();
+    if (this.type !== RequestSource.REQUEST_SOURCE_MEDIA_BRIDGE) this.createDataChannel();
+    if (this.type === RequestSource.REQUEST_SOURCE_DATA_BRIDGE) this.latencyManager = new LatencyManager(sessionId);
   };
 
   public release = () => {
@@ -40,6 +49,7 @@ export class RTCPeerClient {
     this.closeDataChannel();
     this.closePeerConnection();
 
+    this.roomId = undefined;
     this.streamStatus = false;
     this.offerStatus = false;
     this.connectStatus = false;
@@ -62,6 +72,10 @@ export class RTCPeerClient {
     throw new Error('ICE candidate failed');
   };
 
+  public setRoomId = (roomId: string) => {
+    this.roomId = roomId;
+  };
+
   public setStream = (stream: MediaStream) => {
     this.stream = stream;
     this.stream.getTracks().forEach((track) => {
@@ -76,8 +90,16 @@ export class RTCPeerClient {
     await this.peerConnection.setLocalDescription(offer);
   };
 
-  public setAnswer = async (sdp: string) => {
+  public setAnswer = async (roomId: string, sdp: string) => {
+    this.roomId = roomId;
     await this.peerConnection.setRemoteDescription(JSON.parse(atob(sdp)));
+  };
+
+  public debug = async () => {
+    if (!this.latencyManager.count) return;
+    this.latencyManager.setRoomId(this.roomId);
+    await Request({ host: `${Constraint.host}/monit/latency`, body: this.latencyManager });
+    this.latencyManager = new LatencyManager(this.sessionId);
   };
 
   public publish = () => {
@@ -113,15 +135,21 @@ export class RTCPeerClient {
     ];
     this.peerConnection = new RTCPeerConnection({ iceServers });
 
-    this.peerConnection.onicecandidate = (event) => {
-      if (event.candidate === null) {
+    this.peerConnection.onicecandidate = (_) => {
+      if (!this.offerStatus) {
         this.offer = btoa(JSON.stringify(this.peerConnection.localDescription));
         this.offerStatus = true;
       }
     };
 
     this.peerConnection.onconnectionstatechange = (_) => {
-      console.log(this.type, ':', this.peerConnection.connectionState);
+      const type =
+        this.type === RequestSource.REQUEST_SOURCE_MEDIA_BRIDGE
+          ? 'Media'
+          : this.type === RequestSource.REQUEST_SOURCE_DATA_BRIDGE
+          ? 'Broadcast'
+          : 'Session';
+      console.log(`${type} : ${this.peerConnection.connectionState}`);
       if (this.peerConnection.connectionState === 'connected') {
         this.connectStatus = true;
       }
@@ -129,38 +157,58 @@ export class RTCPeerClient {
   };
 
   private createDataChannel = () => {
-    let lastSequence = 0;
-
     this.dataChannel = this.peerConnection.createDataChannel('message');
     this.dataChannel.onerror = (event) => Constraint.event.emit(EventState.ERROR, event);
 
-    if (this.type === 'broadcast') {
+    if (this.type === RequestSource.REQUEST_SOURCE_DATA_BRIDGE) {
+      const sequenceManager: Map<string, number> = new Map();
+      let lastClientTimestamp = 0;
+      let lastServerTImestamp = 0;
+
       this.dataChannel.onmessage = (event) => {
-        const list: OptimizationSession[] = [];
-        const listMessage = serializedRoomData.decode(new Uint8Array(event.data));
-        const decoded = serializedRoomData.toObject(listMessage);
-        for (let i = 0; i < decoded.data.length; i++) {
-          const dataMessage = optimizationSession.decode(decoded.data[i]);
-          const data = optimizationSession.toObject(dataMessage) as OptimizationSession;
+        const now = Date.now();
+        const list: StreamSession[] = [];
+        const serializedStream = SerializedStream.decode(new Uint8Array(event.data));
+
+        for (let i = 0; i < serializedStream.bytes.length; i++) {
+          const streamSession = StreamStruct.decode(serializedStream.bytes[i]) as StreamSession;
+          const lastSequence = sequenceManager.get(streamSession.sessionId) || 0;
 
           /*
             todo: 이전 sequence 데이터는 버리는 방향으로 일단 구현
             추후 우선순위 큐 구현
           */
-          if (data.sequence < lastSequence) continue;
-          lastSequence = data.sequence;
 
-          data.blendshapes = Array.from(new Float32Array(pako.inflateRaw(data.results).buffer));
-          list.push(data);
+          if (streamSession.sequence > lastSequence) {
+            streamSession.blendshapes = Array.from(new Float32Array(pako.inflateRaw(streamSession.data).buffer));
+            sequenceManager.set(streamSession.sessionId, streamSession.sequence);
+          } else {
+            continue;
+          }
+
+          list.push(streamSession);
+
+          if (streamSession.sessionId === this.sessionId) {
+            let packetLatency = 0;
+
+            if (lastClientTimestamp > 0) {
+              const diffClientTimestamp = now - lastClientTimestamp;
+              const diffServerTimestamp = streamSession.proceededAt - lastServerTImestamp;
+              packetLatency = Math.abs(diffClientTimestamp - diffServerTimestamp);
+            }
+
+            lastClientTimestamp = now;
+            lastServerTImestamp = streamSession.proceededAt;
+            streamSession.elapsedTimes.push(packetLatency);
+            this.updateLatency(streamSession);
+          }
         }
-        Constraint.event.emit(EventState.BLENDSHAPE_EVENT, list);
+        Constraint.event.emit('BLENDSHAPE_EVENT', list);
       };
     } else {
       this.dataChannel.onmessage = (event) => {
-        const message = metadataTemplate.decode(new Uint8Array(event.data));
-        const data = metadataTemplate.toObject(message) as MetadataTemplate;
-
-        consumeMetadata(data);
+        const message = SessionTemplate.decode(new Uint8Array(event.data));
+        consumeMetadata(message);
       };
     }
   };
@@ -211,5 +259,15 @@ export class RTCPeerClient {
     this.dataChannel.onerror = null;
     this.dataChannel.onmessage = null;
     this.dataChannel = null;
+  };
+
+  private updateLatency = async (streamStruct: StreamSession) => {
+    if (Date.now() - this.latencyManager.startedAt < 10000) return;
+    this.latencyManager.count++;
+    this.latencyManager.sequence = streamStruct.sequence;
+    this.latencyManager.fps.push(streamStruct.fps);
+    this.latencyManager.dataSizes.push(streamStruct.dataSizes);
+    this.latencyManager.elapsedTimes.push(streamStruct.elapsedTimes);
+    this.latencyManager.proceededTimes.push(streamStruct.proceededTimes);
   };
 }

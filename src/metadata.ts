@@ -1,75 +1,68 @@
-import { EventState, MetadataType } from './enum';
-import { ChatTemplate, MetadataTemplate, RoomTemplate, SystemTemplate, UserTemplate } from './types';
-import { Constraint } from './constant';
-import { metadataTemplate } from './proto';
-
-export type MetadataTypes = UserTemplate | RoomTemplate | ChatTemplate | SystemTemplate | any;
-
-class Metadata<T = MetadataTypes> implements MetadataTemplate {
-  source: string;
-  timestamp: number;
-  data: T;
-
-  constructor(source: string, timestamp: number) {
-    this.source = source;
-    this.timestamp = timestamp;
-  }
-}
+import { EventState } from './domain/enum';
+import { ChatTemplateDto, SessionTemplateDto } from './domain/types';
+import { Constraint } from './domain/constant';
+import { ChatTemplate, SessionTemplate } from './pb/session';
+import { PayloadType, Target } from './pb/constraint';
 
 export const serializeMetadata = (sessionId: string, data: ChatTemplate | object, target?: string[]): Uint8Array => {
-  const metadata: MetadataTemplate = {
+  const type = data instanceof ChatTemplateDto ? PayloadType.PAYLOAD_TYPE_CHAT : PayloadType.PAYLOAD_TYPE_OBJECT;
+  const targetType =
+    target && target.length > 1
+      ? Target.TARGET_GROUP
+      : target && target.length === 1
+      ? Target.TARGET_SINGLE
+      : Target.TARGET_BROADCAST;
+  const metadata: SessionTemplate = {
+    type: type,
+    targetType: targetType,
     source: sessionId,
-    target: target || [],
+    targets: target || [],
+    timestamp: 0,
   };
 
-  if (data instanceof ChatTemplate) {
-    metadata.type = MetadataType.CHAT;
-    metadata.chat = data;
-  } else {
-    metadata.type = MetadataType.OBJECT;
-    metadata.object = JSON.stringify(data);
-  }
+  if (data instanceof ChatTemplateDto) metadata.chat = data;
+  else metadata.object = JSON.stringify(data);
 
-  const message = metadataTemplate.create(metadata);
-  const buffer = metadataTemplate.encode(message).finish();
+  const message = SessionTemplate.create(metadata);
+  const buffer = SessionTemplate.encode(message).finish();
 
   return buffer;
 };
 
-export const consumeMetadata = (data: MetadataTemplate) => {
-  const metadata = new Metadata(data.source, data.timestamp);
+export const consumeMetadata = (data: SessionTemplate) => {
+  const metadata = new SessionTemplateDto(data.source, data.timestamp);
   let event: EventState;
 
   switch (data.type) {
-    case MetadataType.ROOM:
+    case PayloadType.PAYLOAD_TYPE_ROOM:
       if (data.user) {
         metadata.data = data.user;
-        event = EventState.METADATA_USER_EVENT;
+        event = EventState.SESSION_USER_EVENT;
       } else {
         metadata.data = data.room;
-        event = EventState.METADATA_ROOM_EVENT;
+        event = EventState.SESSION_ROOM_EVENT;
       }
       break;
 
-    case MetadataType.CHAT:
+    case PayloadType.PAYLOAD_TYPE_CHAT:
       metadata.data = data.chat;
-      event = EventState.METADATA_CHAT_EVENT;
+      event = EventState.SESSION_CHAT_EVENT;
       break;
 
-    case MetadataType.SYSTEM:
+    case PayloadType.PAYLOAD_TYPE_SYSTEM:
       metadata.data = data.system;
-      event = EventState.METADATA_SYSTEM_EVENT;
+      event = EventState.SESSION_SYSTEM_EVENT;
       break;
 
     default:
       try {
         metadata.data = JSON.parse(data.object);
-        event = EventState.METADATA_OBJECT_EVENT;
+        event = EventState.SESSION_OBJECT_EVENT;
       } catch (err) {
         Constraint.event.emit(EventState.ERROR, err);
         return;
       }
   }
 
-  Constraint.event.emit(event, metadata);
+  Constraint.event.emit('SESSION_EVENT', metadata);
 };

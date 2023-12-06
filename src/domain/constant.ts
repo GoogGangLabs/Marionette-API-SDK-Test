@@ -5,7 +5,8 @@ export const Sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve
 
 export const Constraint: MarionetteConstraint = {
   event: new EventEmitter(),
-  host: 'https://api.goodganglabs.xyz',
+  // host: 'https://api.goodganglabs.xyz',
+  host: 'http://localhost:3000',
   token: undefined,
   iceCredential: {
     username: undefined,

@@ -21,18 +21,29 @@
   <body>
     <input id="input" style="width: 250px; height: 30px; margin-top: 20px; margin-left: 10px" />
     <button id="code" style="width: 70px; height: 37px">code</button>
-    <input id="roomId" style="width: 150px; height: 30px; margin-top: 20px; margin-left: 10px" value="room-id" />
+    <input id="roomname" style="width: 150px; height: 30px; margin-top: 20px; margin-left: 10px" value="roomname" />
     <input id="nickname" style="width: 150px; height: 30px; margin-top: 20px; margin-left: 10px" value="nickname" />
+    <input
+      id="roomId"
+      style="width: 300px; height: 30px; margin-top: 20px; margin-left: 10px"
+      value=""
+      placeholder="Enter the id of the room you want to enter"
+    />
     <br />
     <button id="start" disabled>init</button>
+    <button id="create" disabled>create room</button>
+    <button id="delete" disabled>delete room</button>
     <button id="stop" disabled>release</button>
-    <button id="loadStream" disabled>loadStream</button>
+    <button id="debug" disabled>debug</button>
+    <button id="loadStream" disabled>load stream</button>
     <button id="connect" disabled>connect</button>
     <button id="publish" disabled>publish</button>
     <br />
-    <h3>Room ID&nbsp;&nbsp;&nbsp; : <label id="label-roomId"></label></h3>
     <h3>Session ID : <label id="label-sessionId"></label></h3>
     <h3>Nickname&nbsp; : <label id="label-nickname"></label></h3>
+    <h3>Roomname&nbsp; : <label id="label-roomname"></label></h3>
+    <h3>My Room ID&nbsp;&nbsp;&nbsp; : <label id="label-own-roomId"></label></h3>
+    <h3>Joined Room ID&nbsp;&nbsp;&nbsp; : <label id="label-joined-roomId"></label></h3>
     <br />
     <video id="video" width="640px" height="480px"></video>
     <canvas id="guide"></canvas>

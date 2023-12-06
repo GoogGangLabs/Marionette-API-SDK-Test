@@ -1,6 +1,6 @@
 {
   "name": "@marionette-api/sdk-test-inner",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Marionette API to SDK",
   "type": "module",
   "main": "./lib/index.js",
@@ -14,22 +14,22 @@
   "scripts": {
     "deploy": "sh script/validation.sh && sh script/push.sh",
     "build": "yarn clean && yarn build:tsc && yarn build:js",
+    "build:proto": "protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto -I ./proto/api -I ./proto/message --ts_proto_out=./src/pb --ts_proto_opt=esModuleInterop=true ./proto/api/*.proto ./proto/message/*.proto",
     "build:tsc": "yarn tsc --emitDeclarationOnly",
     "build:js": "node build.js",
     "clean": "rm -rf lib"
   },
   "dependencies": {
     "events": "^3.3.0",
-    "pako": "^2.1.0",
-    "protobufjs": "^7.2.5"
+    "pako": "^2.1.0"
   },
   "devDependencies": {
     "@types/node": "^18.16.3",
     "@types/pako": "^2.0.1",
-    "@types/protobufjs": "^6.0.0",
     "esbuild": "^0.19.3",
     "ts-loader": "^9.4.2",
     "ts-node": "^10.9.1",
+    "ts-proto": "^1.162.1",
     "typescript": "^5.0.4"
   },
   "exports": {
