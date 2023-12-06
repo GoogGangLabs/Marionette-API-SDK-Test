@@ -4,7 +4,9 @@ import * as Type from './types';
 import { Constraint, Sleep } from './constant';
 import { RTCPeerClient } from './peer.client';
 import { Request } from './request';
-import { serializeMetadata } from './metadata';
+import { serializeSessionData } from './metadata';
+import { ChatTemplate } from './pb/session';
+import { DataType } from './pb/constraint';
 
 export { Enum };
 
@@ -41,8 +43,9 @@ export class MarionetteClient {
 
   @Decorator.GuardFactory(Enum.GuardFlag.PEER_CONNECTION)
   @Decorator.ErrorFactory()
-  public emit(data: Type.ChatTemplate | object, target?: string[]) {
-    const metadata = serializeMetadata(this.sessionId, data, target);
+  public emit(data: ChatTemplate | object, target?: string[]) {
+    const type = data instanceof Object ? DataType.OBJECT : DataType.CHAT;
+    const metadata = serializeSessionData(this.sessionId, type, data, target);
     this.sessionClient.emit(metadata);
   }
 

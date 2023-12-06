@@ -1,10 +1,11 @@
 import pako from 'pako';
 import { EventState } from './enum';
 import { Constraint, Sleep } from './constant';
-import { MetadataTemplate, OptimizationSession, PeerType } from './types';
-import { metadataTemplate, optimizationSession, serializedRoomData } from './proto';
+import { OptimizationSession, PeerType } from './types';
 import { ClassBinding } from './decorator';
-import { consumeMetadata } from './metadata';
+import { consumeSessionData } from './metadata';
+import { SessionTemplate } from './pb/session';
+import { SerializedStream, StreamStruct } from './pb/stream';
 
 @ClassBinding
 export class RTCPeerClient {
@@ -130,6 +131,8 @@ export class RTCPeerClient {
 
   private createDataChannel = () => {
     let lastSequence = 0;
+    let lastExternalTimestamp = 0;
+    let lastInternalTimestamp = 0;
 
     this.dataChannel = this.peerConnection.createDataChannel('message');
     this.dataChannel.onerror = (event) => Constraint.event.emit(EventState.ERROR, event);
@@ -137,11 +140,18 @@ export class RTCPeerClient {
     if (this.type === 'broadcast') {
       this.dataChannel.onmessage = (event) => {
         const list: OptimizationSession[] = [];
-        const listMessage = serializedRoomData.decode(new Uint8Array(event.data));
-        const decoded = serializedRoomData.toObject(listMessage);
-        for (let i = 0; i < decoded.data.length; i++) {
-          const dataMessage = optimizationSession.decode(decoded.data[i]);
-          const data = optimizationSession.toObject(dataMessage) as OptimizationSession;
+        const listMessage = SerializedStream.decode(new Uint8Array(event.data));
+        const decoded = SerializedStream.toJSON(listMessage) as SerializedStream;
+        for (let i = 0; i < decoded.list.length; i++) {
+          const streamData = decoded.list[i].toString();
+          const binaryString = atob(streamData);
+          const streamBuffer = new Uint8Array(binaryString.length);
+          for (let i = 0; i < binaryString.length; i++) {
+            streamBuffer[i] = binaryString.charCodeAt(i);
+          }
+          const dataMessage = StreamStruct.decode(streamBuffer);
+          // const dataMessage = StreamStruct.decode(new Uint8Array(Buffer.from(decoded.list[i], 'base64')));
+          const data = StreamStruct.toJSON(dataMessage) as OptimizationSession;
 
           /*
             todo: 이전 sequence 데이터는 버리는 방향으로 일단 구현
@@ -150,17 +160,36 @@ export class RTCPeerClient {
           if (data.sequence < lastSequence) continue;
           lastSequence = data.sequence;
 
-          data.blendshapes = Array.from(new Float32Array(pako.inflateRaw(data.results).buffer));
+          const currInternalTimestamp = Date.now();
+
+          if (lastExternalTimestamp > 0) {
+            const latency = Math.abs(
+              data.proceededAt - lastExternalTimestamp - (currInternalTimestamp - lastInternalTimestamp),
+            );
+            data.latency =
+              data.elapsedTimes.reduce((a, b) => a + b, 0) + data.proceededTimes.reduce((a, b) => a + b, 0) + latency;
+          }
+          lastInternalTimestamp = currInternalTimestamp;
+          lastExternalTimestamp = data.proceededAt;
+
+          const resultData = data.data.toString();
+          const resultBinaryString = atob(resultData);
+          const resultBuffer = new Uint8Array(resultData.length);
+          for (let i = 0; i < resultBinaryString.length; i++) {
+            resultBuffer[i] = resultBinaryString.charCodeAt(i);
+          }
+          data.blendshapes = Array.from(new Float32Array(pako.inflateRaw(resultBuffer).buffer));
+
           list.push(data);
         }
         Constraint.event.emit(EventState.BLENDSHAPE_EVENT, list);
       };
     } else {
       this.dataChannel.onmessage = (event) => {
-        const message = metadataTemplate.decode(new Uint8Array(event.data));
-        const data = metadataTemplate.toObject(message) as MetadataTemplate;
+        const message = SessionTemplate.decode(new Uint8Array(event.data));
+        const data = SessionTemplate.toJSON(message) as SessionTemplate;
 
-        consumeMetadata(data);
+        consumeSessionData(data);
       };
     }
   };

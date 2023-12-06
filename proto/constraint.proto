@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package constraint;
+
+enum RequestSource {
+  CLIENT    = 0;
+  MEDIA     = 1;
+  BROADCAST = 2;
+  SESSION   = 3;
+}
+
+enum DataType {
+  ROOM    = 0;
+  CHAT    = 1;
+  SYSTEM  = 2;
+  OBJECT  = 3;
+}
+
+enum TargetType {
+  GLOBAL  = 0;
+  GROUP   = 1;
+  SINGLE  = 2;
+}
+
+enum SystemEventType {
+  ERROR   = 0;
+}
+
+enum UserRole {
+  OWNER       = 0;
+  PARTICIPANT = 1;
+}
+
+enum UserState {
+  CONNECTED     = 0;
+  DISCONNECTED  = 1;
+}

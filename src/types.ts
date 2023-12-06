@@ -1,12 +1,17 @@
 import { EventEmitter } from 'events';
-import { MetadataType, SystemEventType, TargetType, UserRole, UserState } from './enum';
+import { ChatTemplate, RoomTemplate, SessionTemplate, SystemTemplate, UserTemplate } from './pb/session';
+import { DataType, TargetType } from './pb/constraint';
+import { StreamStruct } from './pb/stream';
 
 export type PeerType = 'media' | 'broadcast' | 'session';
 
-export type MetadataTypes = UserTemplate | RoomTemplate | ChatTemplate | SystemTemplate | any;
+export type SessionTypes = UserTemplate | RoomTemplate | ChatTemplate | SystemTemplate | any;
 
-class Metadata<T = MetadataTypes> implements MetadataTemplate {
+export class Session<T = SessionTypes> implements SessionTemplate {
+  type: DataType;
+  targetType: TargetType;
   source: string;
+  target: string[];
   timestamp: number;
   data: T;
 
@@ -18,14 +23,14 @@ class Metadata<T = MetadataTypes> implements MetadataTemplate {
 
 export interface EventMap {
   LOAD_STREAM: MediaStream;
-  ICE_CANDIDATE: RTCIceCandidateType;
-  ICE_CONNECTION: RTCPeerConnectionState;
+  ICE_CANDIDATE_TYPE: RTCIceCandidateType;
+  CONNECTION_STATE: RTCPeerConnectionState;
   BLENDSHAPE_EVENT: OptimizationSession[];
-  METADATA_USER_EVENT: Metadata<UserTemplate>;
-  METADATA_ROOM_EVENT: Metadata<RoomTemplate>;
-  METADATA_CHAT_EVENT: Metadata<ChatTemplate>;
-  METADATA_SYSTEM_EVENT: Metadata<SystemTemplate>;
-  METADATA_OBJECT_EVENT: Metadata<any>;
+  SESSION_USER_EVENT: Session<UserTemplate>;
+  SESSION_ROOM_EVENT: Session<RoomTemplate>;
+  SESSION_CHAT_EVENT: Session<ChatTemplate>;
+  SESSION_SYSTEM_EVENT: Session<SystemTemplate>;
+  SESSION_OBJECT_EVENT: Session<any>;
   ERROR: any;
 }
 
@@ -57,17 +62,17 @@ export interface StreamConfigurations {
 
 export type BlendshapeResult = number[];
 
-export interface OptimizationSessionList {
-  data: Uint8Array[];
-}
-
-export interface OptimizationSession {
+export interface OptimizationSession extends StreamStruct {
   sessionId: string;
   roomId: string;
-  // fps: number; todo
-  sequence: number;
-  results: Buffer;
   blendshapes?: BlendshapeResult;
+  latency: number;
+  fps: number;
+  sequence: number;
+  startedAt: number;
+  dataSizes: number[];
+  elapsedTimes: number[];
+  proceededTimes: number[];
 }
 
 export class FetchConfigurations<T> {
@@ -95,43 +100,4 @@ export interface SignalingResponse {
   mediaSdp: string;
   broadcastSdp: string;
   sessionSdp: string;
-}
-
-export class MetadataTemplate {
-  type?: MetadataType;
-  targetType?: TargetType;
-  source: string;
-  target?: string[];
-  timestamp?: number;
-  user?: UserTemplate;
-  room?: RoomTemplate;
-  chat?: ChatTemplate;
-  system?: SystemTemplate;
-  object?: string;
-}
-
-export class UserTemplate {
-  sessionId: string;
-  nickname?: string;
-  role: UserRole;
-  state: UserState;
-}
-
-export class RoomTemplate {
-  roomId: string;
-  ownerId: string;
-  name: string;
-  timestamp: number;
-  maxCount: number;
-  userList: UserTemplate[];
-}
-
-export class ChatTemplate {
-  message: string;
-}
-
-export class SystemTemplate {
-  type: SystemEventType;
-  source: string;
-  message: string;
 }

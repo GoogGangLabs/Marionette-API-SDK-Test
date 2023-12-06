@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package session;
+
+import "constraint.proto";
+
+message SessionData {
+  string                    session_id  = 1;
+  string                    room_id     = 2;
+  constraint.RequestSource  source      = 3;
+}
+
+message SessionTemplate {
+  constraint.DataType   type        = 1;
+  constraint.TargetType target_type = 2;
+  string                source      = 3;
+  repeated string       target      = 4;
+  int64                 timestamp   = 5;
+  oneof                 payload {
+    UserTemplate        user    = 6;
+    RoomTemplate        room    = 7;
+    ChatTemplate        chat    = 8;
+    SystemTemplate      system  = 9;
+    string              object  = 10;
+  }
+}
+
+message UserTemplate {
+  string                session_id  = 1;
+  string                nickname    = 2;
+  constraint.UserRole   role        = 3;
+  constraint.UserState  state       = 4;
+}
+
+message RoomTemplate {
+  string                room_id   = 1;
+  string                owner_id  = 2;
+  string                name      = 3;
+  int64                 timestamp = 5;
+  int32                 max_count = 6;
+  repeated UserTemplate user_list = 7;
+}
+
+message ChatTemplate {
+  string  message = 1;
+}
+
+message SystemTemplate {
+  constraint.SystemEventType  type    = 1;
+  string                      source  = 2;
+  string                      message = 3;
+}

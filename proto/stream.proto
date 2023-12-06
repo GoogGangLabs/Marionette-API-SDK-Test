@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package stream;
+
+message SerializedStream {
+  repeated bytes list = 1;
+}
+
+message StreamStruct {
+  string          session_id      = 1;
+  string          room_id         = 2;
+  bytes           data            = 3;
+  int32           sequence        = 4;
+  int32           fps             = 5;
+  int64           started_at      = 6;
+  int64           proceeded_at    = 7;
+  repeated int32  data_sizes      = 8;
+  repeated int32  proceeded_times = 9;
+  repeated int32  elapsed_times   = 10;
+}
